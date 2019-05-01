@@ -86,7 +86,7 @@ struct my_iterator3 : my_iterator1
 };
 
 //
-// Assertion tools.  Used instead of BOOST_STATIC_ASSERT because that
+// Assertion tools.  Used instead of static_assert because that
 // doesn't give us a nice stack backtrace
 //
 template <bool = false> struct assertion;

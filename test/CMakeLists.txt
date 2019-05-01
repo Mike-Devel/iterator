@@ -5,6 +5,8 @@
 # NOTE: CMake support for Boost.Iterator is currently experimental at best
 #       and the interface is likely to change in the future
 
+set(CMAKE_CXX_STANDARD 17)
+
 ###### Collect all tests files ######
 file(GLOB test_files *.cpp)
 

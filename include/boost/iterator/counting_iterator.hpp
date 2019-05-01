@@ -30,7 +30,7 @@ namespace detail
   struct is_numeric_impl
   {
       // For a while, this wasn't true, but we rely on it below. This is a regression assert.
-      BOOST_STATIC_ASSERT(::boost::is_integral<char>::value);
+      static_assert(::boost::is_integral<char>::value);
 
 # ifndef BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS
 
@@ -77,7 +77,7 @@ namespace detail
       typedef typename boost::detail::numeric_traits<T>::difference_type type;
   };
 
-  BOOST_STATIC_ASSERT(is_numeric<int>::value);
+  static_assert(is_numeric<int>::value);
 
   template <class Incrementable, class CategoryOrTraversal, class Difference>
   struct counting_iterator_base

@@ -208,7 +208,7 @@ namespace iterators {
     template <class Tr1, class Tr2>
     inline void iterator_adaptor_assert_traversal ()
     {
-      BOOST_STATIC_ASSERT((is_convertible<Tr1, Tr2>::value));
+      static_assert((is_convertible<Tr1, Tr2>::value));
     }
   }
 
@@ -298,7 +298,7 @@ namespace iterators {
       bool equal(iterator_adaptor<OtherDerived, OtherIterator, V, C, R, D> const& x) const
       {
         // Maybe readd with same_distance
-        //           BOOST_STATIC_ASSERT(
+        //           static_assert(
         //               (detail::same_category_and_difference<Derived,OtherDerived>::value)
         //               );
           return m_iterator == x.base();
@@ -333,7 +333,7 @@ namespace iterators {
       {
           BOOST_ITERATOR_ADAPTOR_ASSERT_TRAVERSAL(random_access_traversal_tag)
           // Maybe readd with same_distance
-          //           BOOST_STATIC_ASSERT(
+          //           static_assert(
           //               (detail::same_category_and_difference<Derived,OtherDerived>::value)
           //               );
           return y.base() - m_iterator;

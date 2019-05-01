@@ -229,7 +229,7 @@ int main()
         filter_iter(one_or_four(), array, array+N)
         , dummyT(1), dummyT(4));
 
-    BOOST_STATIC_ASSERT(
+    static_assert(
         (!boost::is_convertible<
              boost::iterator_traversal<filter_iter>::type
            , boost::random_access_traversal_tag

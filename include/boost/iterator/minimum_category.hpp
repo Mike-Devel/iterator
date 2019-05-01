@@ -44,7 +44,7 @@ struct minimum_category_impl<true,true>
 {
     template <class T1, class T2> struct apply
     {
-        BOOST_STATIC_ASSERT((is_same<T1,T2>::value));
+        static_assert((is_same<T1,T2>::value));
         typedef T1 type;
     };
 };

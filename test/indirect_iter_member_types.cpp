@@ -40,9 +40,9 @@ int main()
     STATIC_ASSERT_SAME(Iter::pointer, int*);  
     STATIC_ASSERT_SAME(Iter::difference_type, std::ptrdiff_t);
     
-    BOOST_STATIC_ASSERT((boost::is_convertible<Iter::iterator_category,
+    static_assert((boost::is_convertible<Iter::iterator_category,
              std::random_access_iterator_tag>::value));
-    BOOST_STATIC_ASSERT((boost::is_convertible<boost::iterator_traversal<Iter>::type,
+    static_assert((boost::is_convertible<boost::iterator_traversal<Iter>::type,
              boost::random_access_traversal_tag>::value));
   }
   {
@@ -71,9 +71,9 @@ int main()
     
     STATIC_ASSERT_SAME(Iter::difference_type, std::ptrdiff_t);
     
-    BOOST_STATIC_ASSERT((boost::is_convertible<Iter::iterator_category,
+    static_assert((boost::is_convertible<Iter::iterator_category,
              std::random_access_iterator_tag>::value));
-    BOOST_STATIC_ASSERT((boost::is_convertible<boost::iterator_traversal<Iter>::type,
+    static_assert((boost::is_convertible<boost::iterator_traversal<Iter>::type,
              boost::random_access_traversal_tag>::value));
   }
   {

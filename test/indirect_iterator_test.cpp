@@ -164,7 +164,7 @@ main()
   {
     typedef boost::indirect_iterator<shared_t::iterator> iter_t;
 
-    BOOST_STATIC_ASSERT(
+    static_assert(
         has_element_type<
             std::iterator_traits<shared_t::iterator>::value_type
         >::value
