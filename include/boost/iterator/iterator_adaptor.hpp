@@ -13,7 +13,6 @@
 
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/iterator/iterator_facade.hpp>
-#include <boost/iterator/detail/enable_if.hpp>
 
 #include <boost/mpl/and.hpp>
 #include <boost/mpl/not.hpp>
@@ -116,11 +115,11 @@ namespace iterators {
   // of is_convertible in a few cases.
   template<typename From, typename To>
   struct enable_if_convertible
-    : iterators::enable_if<
+    : std::enable_if<
         mpl::or_<
             is_same<From,To>
           , is_convertible<From, To>
-        >
+        >::value
       , boost::iterators::detail::enable_type
     >
   {};

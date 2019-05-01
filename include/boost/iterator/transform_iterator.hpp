@@ -7,7 +7,7 @@
 #ifndef BOOST_TRANSFORM_ITERATOR_23022003THW_HPP
 #define BOOST_TRANSFORM_ITERATOR_23022003THW_HPP
 
-#include <boost/iterator/detail/enable_if.hpp>
+
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 #include <boost/mpl/not.hpp>
@@ -22,6 +22,7 @@
 #include <boost/utility/result_of.hpp>
 
 #include <iterator>
+#include <type_traits>
 
 #if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1310))
 # include <boost/type_traits/is_base_and_derived.hpp>
@@ -145,8 +146,8 @@ namespace iterators {
   // function pointer in the iterator be 0, leading to a runtime
   // crash.
   template <class UnaryFunc, class Iterator>
-  inline typename iterators::enable_if<
-      is_class<UnaryFunc>   // We should probably find a cheaper test than is_class<>
+  inline typename std::enable_if<
+      is_class<UnaryFunc>::value   // We should probably find a cheaper test than is_class<>
     , transform_iterator<UnaryFunc, Iterator>
   >::type
   make_transform_iterator(Iterator it)
