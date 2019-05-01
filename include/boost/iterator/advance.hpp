@@ -15,7 +15,7 @@ namespace iterators {
 
     namespace detail {
         template <typename InputIterator, typename Distance>
-        inline BOOST_CXX14_CONSTEXPR void
+        inline constexpr void
         advance_impl(
             InputIterator& it
           , Distance n
@@ -29,7 +29,7 @@ namespace iterators {
         }
 
         template <typename BidirectionalIterator, typename Distance>
-        inline BOOST_CXX14_CONSTEXPR void
+        inline constexpr void
         advance_impl(
             BidirectionalIterator& it
           , Distance n
@@ -51,7 +51,7 @@ namespace iterators {
         }
 
         template <typename RandomAccessIterator, typename Distance>
-        inline BOOST_CXX14_CONSTEXPR void
+        inline constexpr void
         advance_impl(
             RandomAccessIterator& it
           , Distance n
@@ -64,7 +64,7 @@ namespace iterators {
 
     namespace advance_adl_barrier {
         template <typename InputIterator, typename Distance>
-        inline BOOST_CXX14_CONSTEXPR void
+        inline constexpr void
         advance(InputIterator& it, Distance n)
         {
             detail::advance_impl(

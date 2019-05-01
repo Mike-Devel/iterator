@@ -16,7 +16,7 @@ namespace iterators {
 
     namespace detail {
         template <typename SinglePassIterator>
-        inline BOOST_CXX14_CONSTEXPR typename iterator_difference<SinglePassIterator>::type
+        inline constexpr typename iterator_difference<SinglePassIterator>::type
         distance_impl(
             SinglePassIterator first
           , SinglePassIterator last
@@ -32,7 +32,7 @@ namespace iterators {
         }
 
         template <typename RandomAccessIterator>
-        inline BOOST_CXX14_CONSTEXPR typename iterator_difference<RandomAccessIterator>::type
+        inline constexpr typename iterator_difference<RandomAccessIterator>::type
         distance_impl(
             RandomAccessIterator first
           , RandomAccessIterator last
@@ -45,7 +45,7 @@ namespace iterators {
 
     namespace distance_adl_barrier {
         template <typename SinglePassIterator>
-        inline BOOST_CXX14_CONSTEXPR typename iterator_difference<SinglePassIterator>::type
+        inline constexpr typename iterator_difference<SinglePassIterator>::type
         distance(SinglePassIterator first, SinglePassIterator last)
         {
             return detail::distance_impl(
