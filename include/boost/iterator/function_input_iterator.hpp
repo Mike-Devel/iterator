@@ -11,7 +11,6 @@
 
 #include <boost/config.hpp>
 #include <boost/assert.hpp>
-#include <boost/core/addressof.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/function_types/is_function_pointer.hpp>
 #include <boost/function_types/result_type.hpp>
@@ -19,6 +18,8 @@
 #include <boost/none.hpp>
 #include <boost/optional/optional.hpp>
 #include <boost/utility/result_of.hpp>
+
+#include <type_traits>
 
 #ifdef BOOST_RESULT_OF_USE_TR1
 #include <boost/type_traits/is_function.hpp>
@@ -57,7 +58,7 @@ namespace iterators {
         public:
             function_input_iterator() {}
             function_input_iterator(Function & f_, Input state_ = Input())
-                : f(boost::addressof(f_)), state(state_) {}
+                : f(std::addressof(f_)), state(state_) {}
 
             void increment() {
                 if(value)
