@@ -48,22 +48,18 @@ namespace next_prior_detail {
 template< typename T, typename Void = void >
 struct is_iterator_class
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = false;
+    static constexpr bool value = false;
 };
 
 template< typename T >
 struct is_iterator_class<
     T,
     typename enable_if_has_type<
-#if !defined(BOOST_NO_CXX17_ITERATOR_TRAITS)
         typename std::iterator_traits< T >::iterator_category
-#else
-        typename T::iterator_category
-#endif
     >::type
 >
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = true;
+    static constexpr bool value = true;
 };
 
 template< typename T >
@@ -75,7 +71,7 @@ struct is_iterator :
 template< typename T >
 struct is_iterator< T* >
 {
-    static BOOST_CONSTEXPR_OR_CONST bool value = true;
+    static constexpr bool value = true;
 };
 
 

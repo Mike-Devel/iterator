@@ -18,17 +18,19 @@
 #include <boost/mpl/not.hpp>
 #include <boost/mpl/or.hpp>
 
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-
-#ifdef BOOST_ITERATOR_REF_CONSTNESS_KILLS_WRITABILITY
-# include <boost/type_traits/remove_reference.hpp>
-#endif
+//#include <boost/type_traits/is_same.hpp>
+//#include <boost/type_traits/is_convertible.hpp>
+//
+//#ifdef BOOST_ITERATOR_REF_CONSTNESS_KILLS_WRITABILITY
+//# include <boost/type_traits/remove_reference.hpp>
+//#endif
 
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/iterator/detail/config_def.hpp>
 
 #include <boost/iterator/iterator_traits.hpp>
+
+#include <type_traits>
 
 namespace boost {
 namespace iterators {
@@ -104,7 +106,7 @@ namespace iterators {
   template<typename From, typename To>
   struct enable_if_convertible
     : std::enable_if<
-          is_convertible<From, To>::value
+          std::is_convertible<From, To>::value
         , boost::iterators::detail::enable_type
       >
   {};
@@ -119,7 +121,7 @@ namespace iterators {
     template <class T, class DefaultNullaryFn>
     struct ia_dflt_help
       : mpl::eval_if<
-            is_same<T, use_default>
+            std::is_same<T, use_default>
           , DefaultNullaryFn
           , mpl::identity<T>
         >
@@ -144,7 +146,7 @@ namespace iterators {
           , typename boost::iterators::detail::ia_dflt_help<
                 Value
               , mpl::eval_if<
-                    is_same<Reference,use_default>
+                    std::is_same<Reference,use_default>
                   , iterator_value<Base>
                   , remove_reference<Reference>
                 >
@@ -158,7 +160,7 @@ namespace iterators {
           , typename boost::iterators::detail::ia_dflt_help<
                 Reference
               , mpl::eval_if<
-                    is_same<Value,use_default>
+                    std::is_same<Value,use_default>
                   , iterator_reference<Base>
                   , add_reference<Value>
                 >
@@ -175,7 +177,7 @@ namespace iterators {
     template <class Tr1, class Tr2>
     inline void iterator_adaptor_assert_traversal ()
     {
-      static_assert((is_convertible<Tr1, Tr2>::value));
+      static_assert(std::is_convertible<Tr1, Tr2>::value);
     }
   }
 

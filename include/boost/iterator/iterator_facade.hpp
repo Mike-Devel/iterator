@@ -14,15 +14,6 @@
 
 #include <boost/iterator/detail/facade_iterator_category.hpp>
 
-#include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/add_const.hpp>
-#include <boost/type_traits/add_pointer.hpp>
-#include <boost/type_traits/add_lvalue_reference.hpp>
-#include <boost/type_traits/remove_const.hpp>
-#include <boost/type_traits/remove_reference.hpp>
-#include <boost/type_traits/is_convertible.hpp>
-#include <boost/type_traits/is_pod.hpp>
-
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/mpl/or.hpp>
@@ -61,7 +52,7 @@ namespace iterators {
     // The type trait checks if the category or traversal is at least as advanced as the specified required traversal
     template< typename CategoryOrTraversal, typename Required >
     struct is_traversal_at_least :
-        public boost::is_convertible< typename iterator_category_to_traversal< CategoryOrTraversal >::type, Required >
+        public std::is_convertible< typename iterator_category_to_traversal< CategoryOrTraversal >::type, Required >
     {};
 
     //
@@ -115,13 +106,13 @@ namespace iterators {
             CategoryOrTraversal, ValueParam, Reference
         >::type iterator_category;
 
-        typedef typename remove_const<ValueParam>::type value_type;
+        typedef std::remove_const_t<ValueParam> value_type;
 
         // Not the real associated pointer type
         typedef typename mpl::eval_if<
             boost::iterators::detail::iterator_writability_disabled<ValueParam,Reference>
-          , add_pointer<const value_type>
-          , add_pointer<value_type>
+          , std::add_pointer<const value_type>
+          , std::add_pointer<value_type>
         >::type pointer;
     };
 
@@ -213,7 +204,7 @@ namespace iterators {
     template <class Reference, class Value>
     struct is_non_proxy_reference
       : is_convertible<
-            typename remove_reference<Reference>::type
+            std::remove_reference_t<Reference>
             const volatile*
           , Value const volatile*
         >
@@ -246,7 +237,7 @@ namespace iterators {
                     // 'reference-to-reference' in the template which described in CWG
                     // DR106.
                     // http://www.open-std.org/Jtc1/sc22/wg21/docs/cwg_defects.html#106
-                  , typename add_lvalue_reference<Value const>::type
+                  , std::add_lvalue_reference_t<Value const>
                 >
 
                 // No multipass iterator can have values that disappear
@@ -339,7 +330,7 @@ namespace iterators {
             mpl::and_<
                 // Really we want an is_copy_constructible trait here,
                 // but is_POD will have to suffice in the meantime.
-                boost::is_POD<ValueType>
+                std::is_pod<ValueType>
               , iterator_writability_disabled<ValueType,Reference>
             >
         >
@@ -373,7 +364,7 @@ namespace iterators {
         struct apply
           :
           mpl::eval_if<
-              is_convertible<I2,I1>
+              std::is_convertible<I2,I1>
             , iterator_difference<I1>
             , iterator_difference<I2>
           >

@@ -5,8 +5,6 @@
 #ifndef ITERATOR_TRAITS_DWA200347_HPP
 # define ITERATOR_TRAITS_DWA200347_HPP
 
-# include <boost/detail/workaround.hpp>
-
 #include <iterator>
 
 namespace boost {
@@ -15,32 +13,32 @@ namespace iterators {
 template <class Iterator>
 struct iterator_value
 {
-    typedef typename std::iterator_traits<Iterator>::value_type type;
+    using type = typename std::iterator_traits<Iterator>::value_type;
 };
 
 template <class Iterator>
 struct iterator_reference
 {
-    typedef typename std::iterator_traits<Iterator>::reference type;
+    using type = typename std::iterator_traits<Iterator>::reference;
 };
 
 
 template <class Iterator>
 struct iterator_pointer
 {
-    typedef typename std::iterator_traits<Iterator>::pointer type;
+    using type = typename std::iterator_traits<Iterator>::pointer;
 };
 
 template <class Iterator>
 struct iterator_difference
 {
-    typedef typename std::iterator_traits<Iterator>::difference_type type;
+    using type = typename std::iterator_traits<Iterator>::difference_type;
 };
 
 template <class Iterator>
 struct iterator_category
 {
-    typedef typename std::iterator_traits<Iterator>::iterator_category type;
+    using type = typename std::iterator_traits<Iterator>::iterator_category;
 };
 
 } // namespace iterators
