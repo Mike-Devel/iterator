@@ -25,7 +25,7 @@ namespace iterators {
 
 namespace detail
 {
-#ifndef BOOST_NO_LVALUE_RETURN_DETECTION
+
   // Calling lvalue_preserver( <expression>, 0 ) returns a reference
   // to the expression's result if <expression> is an lvalue, or
   // not_an_lvalue() otherwise.
@@ -38,12 +38,6 @@ namespace detail
   not_an_lvalue lvalue_preserver(U const&, ...);
 
 # define BOOST_LVALUE_PRESERVER(expr) detail::lvalue_preserver(expr,0)
-
-#else
-
-# define BOOST_LVALUE_PRESERVER(expr) expr
-
-#endif
 
   // Guts of is_lvalue_iterator.  Value is the iterator's value_type
   // and the result is computed in the nested rebind template.
@@ -91,7 +85,6 @@ namespace detail
       {};
   };
 
-#ifndef BOOST_NO_CV_VOID_SPECIALIZATIONS
   template <>
   struct is_lvalue_iterator_impl<const void>
   {
@@ -115,7 +108,6 @@ namespace detail
       struct rebind : boost::mpl::false_
       {};
   };
-#endif
 
   //
   // This level of dispatching is required for Borland.  We might save
@@ -124,14 +116,14 @@ namespace detail
   template <class It>
   struct is_readable_lvalue_iterator_impl
     : is_lvalue_iterator_impl<
-          BOOST_DEDUCED_TYPENAME std::iterator_traits<It>::value_type const
+          typename std::iterator_traits<It>::value_type const
       >::template rebind<It>
   {};
 
   template <class It>
   struct is_non_const_lvalue_iterator_impl
     : is_lvalue_iterator_impl<
-          BOOST_DEDUCED_TYPENAME std::iterator_traits<It>::value_type
+          typename std::iterator_traits<It>::value_type
       >::template rebind<It>
   {};
 } // namespace detail
@@ -139,15 +131,11 @@ namespace detail
 template< typename T > struct is_lvalue_iterator
 : public ::boost::integral_constant<bool,::boost::iterators::detail::is_readable_lvalue_iterator_impl<T>::value>
 {
-public:
-    BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_lvalue_iterator,(T))
 };
 
 template< typename T > struct is_non_const_lvalue_iterator
 : public ::boost::integral_constant<bool,::boost::iterators::detail::is_non_const_lvalue_iterator_impl<T>::value>
 {
-public:
-    BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_non_const_lvalue_iterator,(T))
 };
 
 } // namespace iterators

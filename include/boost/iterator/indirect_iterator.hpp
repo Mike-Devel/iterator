@@ -25,13 +25,6 @@
 
 #include <iterator>
 
-#ifdef BOOST_MPL_CFG_NO_HAS_XXX
-# include <boost/shared_ptr.hpp>
-# include <boost/scoped_ptr.hpp>
-# include <boost/mpl/bool.hpp>
-# include <memory>
-#endif
-
 #include <boost/iterator/detail/config_def.hpp> // must be last #include
 
 namespace boost {
@@ -111,11 +104,7 @@ namespace iterators {
   private:
       typename super_t::reference dereference() const
       {
-# if BOOST_WORKAROUND(__BORLANDC__, < 0x5A0 )
-          return const_cast<super_t::reference>(**this->base());
-# else
           return **this->base();
-# endif
       }
   };
 

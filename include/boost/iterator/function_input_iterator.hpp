@@ -21,9 +21,6 @@
 
 #include <type_traits>
 
-#ifdef BOOST_RESULT_OF_USE_TR1
-#include <boost/type_traits/is_function.hpp>
-#endif
 
 namespace boost {
 
@@ -38,11 +35,7 @@ namespace iterators {
         struct result_of_nullary_lvalue_call
         {
             typedef typename result_of<
-#ifdef BOOST_RESULT_OF_USE_TR1
-                typename mpl::if_<is_function<F>, F&, F>::type()
-#else
                 F&()
-#endif
             >::type type;
         };
 

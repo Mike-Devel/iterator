@@ -19,9 +19,7 @@
 
 # include <boost/iterator/detail/config_def.hpp> // try to keep this last
 
-# ifdef BOOST_ITERATOR_REF_CONSTNESS_KILLS_WRITABILITY
 #  include <boost/detail/indirect_traits.hpp>
-# endif
 
 //
 // iterator_category deduction for iterator_facade

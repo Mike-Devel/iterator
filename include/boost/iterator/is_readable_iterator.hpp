@@ -16,8 +16,6 @@
 #include <boost/type_traits/integral_constant.hpp>
 #include <boost/iterator/detail/config_def.hpp>
 
-#ifndef BOOST_NO_IS_CONVERTIBLE
-
 namespace boost {
 
 namespace iterators {
@@ -36,15 +34,12 @@ namespace detail
       struct rebind
       {
           static It& x;
-
-          BOOST_STATIC_CONSTANT(
-              bool
-            , value = (
+          static constexpr bool value = (
                 sizeof(
                     is_readable_iterator_impl<Value>::tester(*x, 1)
                 ) == 1
-            )
-          );
+            );
+
       };
   };
 
@@ -61,7 +56,6 @@ namespace detail
       {};
   };
 
-#ifndef BOOST_NO_CV_VOID_SPECIALIZATIONS
   template <>
   struct is_readable_iterator_impl<const void>
   {
@@ -85,7 +79,6 @@ namespace detail
       struct rebind : boost::mpl::false_
       {};
   };
-#endif
 
   //
   // This level of dispatching is required for Borland.  We might save
@@ -94,7 +87,7 @@ namespace detail
   template <class It>
   struct is_readable_iterator_impl2
     : is_readable_iterator_impl<
-          BOOST_DEDUCED_TYPENAME std::iterator_traits<It>::value_type const
+          typename std::iterator_traits<It>::value_type const
       >::template rebind<It>
   {};
 } // namespace detail
@@ -102,8 +95,6 @@ namespace detail
 template< typename T > struct is_readable_iterator
 : public ::boost::integral_constant<bool,::boost::iterators::detail::is_readable_iterator_impl2<T>::value>
 {
-public:
-    BOOST_MPL_AUX_LAMBDA_SUPPORT(1,is_readable_iterator,(T))
 };
 
 } // namespace iterators
@@ -111,8 +102,6 @@ public:
 using iterators::is_readable_iterator;
 
 } // namespace boost
-
-#endif
 
 #include <boost/iterator/detail/config_undef.hpp>
 

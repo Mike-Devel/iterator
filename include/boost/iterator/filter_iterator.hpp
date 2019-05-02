@@ -61,13 +61,9 @@ namespace iterators {
       filter_iterator(Iterator x, Iterator end_ = Iterator())
         : super_t(x), m_predicate(), m_end(end_)
       {
-        // Pro8 is a little too aggressive about instantiating the
-        // body of this function.
-#if !BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
           // Don't allow use of this constructor if Predicate is a
           // function pointer type, since it will be 0.
           static_assert(std::is_class_v<Predicate>);
-#endif
           satisfy_predicate();
       }
 

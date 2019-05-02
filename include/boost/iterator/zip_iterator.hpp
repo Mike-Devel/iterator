@@ -312,7 +312,7 @@ namespace iterators {
     {
         fusion::for_each(
           m_iterator_tuple,
-          detail::advance_iterator<BOOST_DEDUCED_TYPENAME super_t::difference_type>(n));
+          detail::advance_iterator<typename super_t::difference_type>(n));
     }
     // Incrementing a zip iterator means to increment all iterators in
     // the iterator tuple.

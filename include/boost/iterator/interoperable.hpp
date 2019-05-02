@@ -33,13 +33,9 @@ namespace iterators {
   //
   template <typename A, typename B>
   struct is_interoperable
-# ifdef BOOST_NO_STRICT_ITERATOR_INTEROPERABILITY
-    : mpl::true_
-# else
     : mpl::or_<
           is_convertible< A, B >
         , is_convertible< B, A > >
-# endif
   {
   };
 

@@ -32,23 +32,9 @@ namespace detail
       // For a while, this wasn't true, but we rely on it below. This is a regression assert.
       static_assert(::boost::is_integral<char>::value);
 
-# ifndef BOOST_NO_LIMITS_COMPILE_TIME_CONSTANTS
+      static constexpr bool value = std::numeric_limits<T>::is_specialized;
 
-      BOOST_STATIC_CONSTANT(bool, value = std::numeric_limits<T>::is_specialized);
 
-# else
-
-#  if !BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x551))
-      BOOST_STATIC_CONSTANT(
-          bool, value = (
-              boost::is_convertible<int,T>::value
-           && boost::is_convertible<T,int>::value
-      ));
-#  else
-    BOOST_STATIC_CONSTANT(bool, value = ::boost::is_arithmetic<T>::value);
-#  endif
-
-# endif
   };
 
   template <class T>
@@ -56,7 +42,6 @@ namespace detail
     : mpl::bool_<(::boost::iterators::detail::is_numeric_impl<T>::value)>
   {};
 
-#  if defined(BOOST_HAS_LONG_LONG)
   template <>
   struct is_numeric< ::boost::long_long_type>
     : mpl::true_ {};
@@ -64,7 +49,6 @@ namespace detail
   template <>
   struct is_numeric< ::boost::ulong_long_type>
     : mpl::true_ {};
-#  endif
 
   // Some compilers fail to have a numeric_limits specialization
   template <>
@@ -104,10 +88,6 @@ namespace detail
           counting_iterator<Incrementable, CategoryOrTraversal, Difference> // self
         , Incrementable                                           // Base
         , Incrementable                                           // Value
-# ifndef BOOST_ITERATOR_REF_CONSTNESS_KILLS_WRITABILITY
-          const  // MSVC won't strip this.  Instead we enable Thomas'
-                 // criterion (see boost/iterator/detail/facade_iterator_category.hpp)
-# endif
         , traversal
         , Incrementable const&                                    // reference
         , difference
@@ -169,16 +149,6 @@ class counting_iterator
       : super_t(x)
     {
     }
-
-# if 0
-    template<class OtherIncrementable>
-    counting_iterator(
-        counting_iterator<OtherIncrementable, CategoryOrTraversal, Difference> const& t
-      , typename enable_if_convertible<OtherIncrementable, Incrementable>::type* = 0
-    )
-      : super_t(t.base())
-    {}
-# endif
 
  private:
 
