@@ -75,7 +75,6 @@ struct minimum_category
     typedef typename outer::template apply<T1,T2> inner;
     typedef typename inner::type type;
 
-    BOOST_MPL_AUX_LAMBDA_SUPPORT(2,minimum_category,(T1,T2))
 };
 
 template <>
@@ -85,7 +84,6 @@ struct minimum_category<mpl::_1,mpl::_2>
     struct apply : minimum_category<T1,T2>
     {};
 
-    BOOST_MPL_AUX_LAMBDA_SUPPORT_SPEC(2,minimum_category,(mpl::_1,mpl::_2))
 };
 
 } // namespace iterators

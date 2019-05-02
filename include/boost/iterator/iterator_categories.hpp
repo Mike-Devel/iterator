@@ -121,25 +121,6 @@ struct iterator_traversal
     >
 {};
 
-# ifdef BOOST_MPL_CFG_NO_FULL_LAMBDA_SUPPORT
-// Hack because BOOST_MPL_AUX_LAMBDA_SUPPORT doesn't seem to work
-// out well.  Instantiating the nested apply template also
-// requires instantiating iterator_traits on the
-// placeholder. Instead we just specialize it as a metafunction
-// class.
-template <>
-struct iterator_traversal<mpl::_1>
-{
-    template <class T>
-    struct apply : iterator_traversal<T>
-    {};
-};
-template <>
-struct iterator_traversal<mpl::_>
-  : iterator_traversal<mpl::_1>
-{};
-# endif
-
 //
 // Convert an iterator traversal to one of the traversal tags.
 //
@@ -176,20 +157,6 @@ template <class Iterator = mpl::_1>
 struct pure_iterator_traversal
   : pure_traversal_tag<typename iterator_traversal<Iterator>::type>
 {};
-
-# ifdef BOOST_MPL_CFG_NO_FULL_LAMBDA_SUPPORT
-template <>
-struct pure_iterator_traversal<mpl::_1>
-{
-    template <class T>
-    struct apply : pure_iterator_traversal<T>
-    {};
-};
-template <>
-struct pure_iterator_traversal<mpl::_>
-  : pure_iterator_traversal<mpl::_1>
-{};
-# endif
 
 } // namespace iterators
 

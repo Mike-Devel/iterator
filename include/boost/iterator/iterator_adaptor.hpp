@@ -101,40 +101,13 @@ namespace iterators {
   // false positives for user/library defined iterator types. See comments
   // on operator implementation for consequences.
   //
-#  if defined(BOOST_NO_IS_CONVERTIBLE) || defined(BOOST_NO_SFINAE)
-
-  template <class From, class To>
-  struct enable_if_convertible
-  {
-      typedef boost::iterators::detail::enable_type type;
-  };
-
-#  elif BOOST_WORKAROUND(_MSC_FULL_VER, BOOST_TESTED_AT(13102292))
-
-  // For some reason vc7.1 needs us to "cut off" instantiation
-  // of is_convertible in a few cases.
   template<typename From, typename To>
   struct enable_if_convertible
     : std::enable_if<
-        mpl::or_<
-            is_same<From,To>
-          , is_convertible<From, To>
-        >::value
-      , boost::iterators::detail::enable_type
-    >
-  {};
-
-#  else
-
-  template<typename From, typename To>
-  struct enable_if_convertible
-    : iterators::enable_if<
-          is_convertible<From, To>
+          is_convertible<From, To>::value
         , boost::iterators::detail::enable_type
       >
   {};
-
-# endif
 
   //
   // Default template argument handling for iterator_adaptor
@@ -168,7 +141,6 @@ namespace iterators {
         typedef iterator_facade<
             Derived
 
-# ifdef BOOST_ITERATOR_REF_CONSTNESS_KILLS_WRITABILITY
           , typename boost::iterators::detail::ia_dflt_help<
                 Value
               , mpl::eval_if<
@@ -177,11 +149,6 @@ namespace iterators {
                   , remove_reference<Reference>
                 >
             >::type
-# else
-          , typename boost::iterators::detail::ia_dflt_help<
-                Value, iterator_value<Base>
-            >::type
-# endif
 
           , typename boost::iterators::detail::ia_dflt_help<
                 Traversal
@@ -308,12 +275,9 @@ namespace iterators {
           typename super_t::iterator_category
       >::type my_traversal;
 
-# define BOOST_ITERATOR_ADAPTOR_ASSERT_TRAVERSAL(cat) \
-      boost::iterators::detail::iterator_adaptor_assert_traversal<my_traversal, cat>();
-
       void advance(typename super_t::difference_type n)
       {
-          BOOST_ITERATOR_ADAPTOR_ASSERT_TRAVERSAL(random_access_traversal_tag)
+          boost::iterators::detail::iterator_adaptor_assert_traversal<my_traversal, random_access_traversal_tag>();
           m_iterator += n;
       }
 
@@ -321,7 +285,7 @@ namespace iterators {
 
       void decrement()
       {
-          BOOST_ITERATOR_ADAPTOR_ASSERT_TRAVERSAL(bidirectional_traversal_tag)
+          boost::iterators::detail::iterator_adaptor_assert_traversal<my_traversal, bidirectional_traversal_tag>();
            --m_iterator;
       }
 
@@ -331,15 +295,13 @@ namespace iterators {
       typename super_t::difference_type distance_to(
           iterator_adaptor<OtherDerived, OtherIterator, V, C, R, D> const& y) const
       {
-          BOOST_ITERATOR_ADAPTOR_ASSERT_TRAVERSAL(random_access_traversal_tag)
+          boost::iterators::detail::iterator_adaptor_assert_traversal<my_traversal, random_access_traversal_tag>();
           // Maybe readd with same_distance
           //           static_assert(
           //               (detail::same_category_and_difference<Derived,OtherDerived>::value)
           //               );
           return y.base() - m_iterator;
       }
-
-# undef BOOST_ITERATOR_ADAPTOR_ASSERT_TRAVERSAL
 
    private: // data members
       Base m_iterator;

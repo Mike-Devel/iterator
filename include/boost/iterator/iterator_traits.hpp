@@ -12,11 +12,6 @@
 namespace boost {
 namespace iterators {
 
-// Macro for supporting old compilers, no longer needed but kept
-// for backwards compatibility (it was documented).
-#define BOOST_ITERATOR_CATEGORY iterator_category
-
-
 template <class Iterator>
 struct iterator_value
 {

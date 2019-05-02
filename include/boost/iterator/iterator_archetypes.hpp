@@ -442,34 +442,7 @@ namespace detail
 template <class Value, class AccessCategory, class TraversalCategory>
 struct iterator_archetype
   : public detail::iterator_archetype_base<Value, AccessCategory, TraversalCategory>
-
-    // These broken libraries require derivation from std::iterator
-    // (or related magic) in order to handle iter_swap and other
-    // iterator operations
-# if BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, < 310)           \
-    || BOOST_WORKAROUND(_RWSTD_VER, BOOST_TESTED_AT(0x20101))
-  , public detail::iterator_archetype_base<
-        Value, AccessCategory, TraversalCategory
-    >::workaround_iterator_base
-# endif
 {
-    // Derivation from std::iterator above caused references to nested
-    // types to be ambiguous, so now we have to redeclare them all
-    // here.
-# if BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, < 310)           \
-    || BOOST_WORKAROUND(_RWSTD_VER, BOOST_TESTED_AT(0x20101))
-
-    typedef detail::iterator_archetype_base<
-        Value,AccessCategory,TraversalCategory
-    > base;
-
-    typedef typename base::value_type value_type;
-    typedef typename base::reference reference;
-    typedef typename base::pointer pointer;
-    typedef typename base::difference_type difference_type;
-    typedef typename base::iterator_category iterator_category;
-# endif
-
     iterator_archetype() { }
     iterator_archetype(iterator_archetype const& x)
       : detail::iterator_archetype_base<
@@ -481,16 +454,6 @@ struct iterator_archetype
 
     iterator_archetype& operator=(iterator_archetype const&)
         { return *this; }
-
-# if 0
-    // Optional conversion from mutable
-    iterator_archetype(
-        iterator_archetype<
-        typename detail::convertible_type<Value>::type
-      , AccessCategory
-      , TraversalCategory> const&
-    );
-# endif
 };
 
 } // namespace iterators

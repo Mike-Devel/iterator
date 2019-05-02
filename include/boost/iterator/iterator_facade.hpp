@@ -123,23 +123,6 @@ namespace iterators {
           , add_pointer<const value_type>
           , add_pointer<value_type>
         >::type pointer;
-
-# if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)                          \
-    && (BOOST_WORKAROUND(_STLPORT_VERSION, BOOST_TESTED_AT(0x452))              \
-        || BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, BOOST_TESTED_AT(310)))     \
-    || BOOST_WORKAROUND(BOOST_RWSTD_VER, BOOST_TESTED_AT(0x20101))              \
-    || BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, <= 310)
-
-        // To interoperate with some broken library/compiler
-        // combinations, user-defined iterators must be derived from
-        // std::iterator.  It is possible to implement a standard
-        // library for broken compilers without this limitation.
-#  define BOOST_ITERATOR_FACADE_NEEDS_ITERATOR_BASE 1
-
-        typedef
-           iterator<iterator_category, value_type, Difference, pointer, Reference>
-        base;
-# endif
     };
 
     // iterators whose dereference operators reference the same value
@@ -227,33 +210,6 @@ namespace iterators {
         Iterator stored_iterator;
     };
 
-# ifdef BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION
-
-    template <class Reference, class Value>
-    struct is_non_proxy_reference_impl
-    {
-        static Reference r;
-
-        template <class R>
-        static typename mpl::if_<
-            is_convertible<
-                R const volatile*
-              , Value const volatile*
-            >
-          , char[1]
-          , char[2]
-        >::type& helper(R const&);
-
-        BOOST_STATIC_CONSTANT(bool, value = sizeof(helper(r)) == 1);
-    };
-
-    template <class Reference, class Value>
-    struct is_non_proxy_reference
-      : mpl::bool_<
-            is_non_proxy_reference_impl<Reference, Value>::value
-        >
-    {};
-# else
     template <class Reference, class Value>
     struct is_non_proxy_reference
       : is_convertible<
@@ -262,7 +218,6 @@ namespace iterators {
           , Value const volatile*
         >
     {};
-# endif
 
     // A metafunction to choose the result type of postfix ++
     //
@@ -417,15 +372,11 @@ namespace iterators {
         template <class I1, class I2>
         struct apply
           :
-# ifdef BOOST_NO_ONE_WAY_ITERATOR_INTEROP
-          iterator_difference<I1>
-# else
           mpl::eval_if<
               is_convertible<I2,I1>
             , iterator_difference<I1>
             , iterator_difference<I2>
           >
-# endif
         {};
 
     };
@@ -445,17 +396,6 @@ namespace iterators {
 
 
   // Macros which describe the declarations of binary operators
-# ifdef BOOST_NO_STRICT_ITERATOR_INTEROPERABILITY
-#  define BOOST_ITERATOR_FACADE_INTEROP_HEAD_IMPL(prefix, op, result_type, enabler)       \
-    template <                                                              \
-        class Derived1, class V1, class TC1, class Reference1, class Difference1 \
-      , class Derived2, class V2, class TC2, class Reference2, class Difference2 \
-    >                                                                       \
-    prefix typename mpl::apply2<result_type,Derived1,Derived2>::type \
-    operator op(                                                            \
-        iterator_facade<Derived1, V1, TC1, Reference1, Difference1> const& lhs   \
-      , iterator_facade<Derived2, V2, TC2, Reference2, Difference2> const& rhs)
-# else
 #  define BOOST_ITERATOR_FACADE_INTEROP_HEAD_IMPL(prefix, op, result_type, enabler)   \
     template <                                                          \
         class Derived1, class V1, class TC1, class Reference1, class Difference1 \
@@ -468,7 +408,6 @@ namespace iterators {
     operator op(                                                        \
         iterator_facade<Derived1, V1, TC1, Reference1, Difference1> const& lhs   \
       , iterator_facade<Derived2, V2, TC2, Reference2, Difference2> const& rhs)
-# endif
 
 #  define BOOST_ITERATOR_FACADE_INTEROP_HEAD(prefix, op, result_type)       \
     BOOST_ITERATOR_FACADE_INTEROP_HEAD_IMPL(prefix, op, result_type, boost::iterators::detail::enable_if_interoperable)
@@ -494,11 +433,9 @@ namespace iterators {
   //
   class iterator_core_access
   {
-# if defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
       // Tasteless as this may seem, making all members public allows member templates
       // to work in the absence of member template friends.
    public:
-# else
 
       template <class I, class V, class TC, class R, class D> friend class iterator_facade;
       template <class I, class V, class TC, class R, class D, bool IsBidirectionalTraversal, bool IsRandomAccessTraversal>
@@ -540,7 +477,7 @@ namespace iterators {
       )
       ;
 
-# endif
+
 
       template <class Facade>
       static typename Facade::reference dereference(Facade const& f)
@@ -622,12 +559,6 @@ namespace iterators {
       , class Difference
     >
     class iterator_facade_base< Derived, Value, CategoryOrTraversal, Reference, Difference, false, false >
-# ifdef BOOST_ITERATOR_FACADE_NEEDS_ITERATOR_BASE
-        : public boost::iterators::detail::iterator_facade_types<
-             Value, CategoryOrTraversal, Reference, Difference
-          >::base
-#  undef BOOST_ITERATOR_FACADE_NEEDS_ITERATOR_BASE
-# endif
     {
     private:
         typedef boost::iterators::detail::iterator_facade_types<
@@ -867,11 +798,8 @@ namespace iterators {
   // ----------------
   //
 
-# ifdef BOOST_NO_ONE_WAY_ITERATOR_INTEROP
-#  define BOOST_ITERATOR_CONVERTIBLE(a,b) mpl::true_()
-# else
 #  define BOOST_ITERATOR_CONVERTIBLE(a,b) is_convertible<a,b>()
-# endif
+
 
 # define BOOST_ITERATOR_FACADE_INTEROP(op, result_type, return_prefix, base_op) \
   BOOST_ITERATOR_FACADE_INTEROP_HEAD(inline, op, result_type)                   \

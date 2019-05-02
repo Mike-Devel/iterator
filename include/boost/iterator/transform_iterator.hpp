@@ -24,10 +24,6 @@
 #include <iterator>
 #include <type_traits>
 
-#if BOOST_WORKAROUND(BOOST_MSVC, BOOST_TESTED_AT(1310))
-# include <boost/type_traits/is_base_and_derived.hpp>
-#endif
-
 #include <boost/iterator/detail/config_def.hpp>
 
 
@@ -48,11 +44,7 @@ namespace iterators {
         // the function.
         typedef typename ia_dflt_help<
             Reference
-#ifdef BOOST_RESULT_OF_USE_TR1
-          , result_of<const UnaryFunc(typename std::iterator_traits<Iterator>::reference)>
-#else
           , result_of<const UnaryFunc&(typename std::iterator_traits<Iterator>::reference)>
-#endif
         >::type reference;
 
         // To get the default for Value: remove any reference on the
@@ -95,13 +87,9 @@ namespace iterators {
     explicit transform_iterator(Iterator const& x)
       : super_t(x)
     {
-        // Pro8 is a little too aggressive about instantiating the
-        // body of this function.
-#if !BOOST_WORKAROUND(__MWERKS__, BOOST_TESTED_AT(0x3003))
         // don't provide this constructor if UnaryFunc is a
         // function pointer type, since it will be 0.  Too dangerous.
         static_assert(is_class<UnaryFunc>::value);
-#endif
     }
 
     template <
@@ -112,9 +100,7 @@ namespace iterators {
     transform_iterator(
          transform_iterator<OtherUnaryFunction, OtherIterator, OtherReference, OtherValue> const& t
        , typename enable_if_convertible<OtherIterator, Iterator>::type* = 0
-#if !BOOST_WORKAROUND(BOOST_MSVC, == 1310)
        , typename enable_if_convertible<OtherUnaryFunction, UnaryFunc>::type* = 0
-#endif
     )
       : super_t(t.base()), m_f(t.functor())
    {}
@@ -154,15 +140,6 @@ namespace iterators {
   {
       return transform_iterator<UnaryFunc, Iterator>(it, UnaryFunc());
   }
-
-#if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION ) && !defined(BOOST_NO_FUNCTION_TEMPLATE_ORDERING)
-  template <class Return, class Argument, class Iterator>
-  inline transform_iterator< Return (*)(Argument), Iterator, Return>
-  make_transform_iterator(Iterator it, Return (*fun)(Argument))
-  {
-    return transform_iterator<Return (*)(Argument), Iterator, Return>(it, fun);
-  }
-#endif
 
 } // namespace iterators
 

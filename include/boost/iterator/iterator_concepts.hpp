@@ -42,8 +42,8 @@ namespace boost_concepts
     , boost::CopyConstructible<Iterator>
 
   {
-      typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type value_type;
-      typedef BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::reference reference;
+      typedef typename std::iterator_traits<Iterator>::value_type value_type;
+      typedef typename std::iterator_traits<Iterator>::reference reference;
 
       BOOST_CONCEPT_USAGE(ReadableIterator)
       {
@@ -57,7 +57,7 @@ namespace boost_concepts
 
   template <
       typename Iterator
-    , typename ValueType = BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
+    , typename ValueType = typename std::iterator_traits<Iterator>::value_type
   >
   struct WritableIterator
     : boost::CopyConstructible<Iterator>
@@ -73,7 +73,7 @@ namespace boost_concepts
 
   template <
       typename Iterator
-    , typename ValueType = BOOST_DEDUCED_TYPENAME std::iterator_traits<Iterator>::value_type
+    , typename ValueType = typename std::iterator_traits<Iterator>::value_type
   >
   struct WritableIteratorConcept : WritableIterator<Iterator,ValueType> {};
 
