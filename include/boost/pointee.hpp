@@ -46,7 +46,7 @@ namespace detail
 
       static constexpr bool is_constant = (sizeof(impl::test(*impl::x)) == 1);
 
-	  using type = std::conditional_t < is_constant, std::add_const_t<value_type>, value_type>;
+	  using type = typename std::conditional< is_constant, std::add_const_t<value_type>, value_type>::type;
   };
 }
 
