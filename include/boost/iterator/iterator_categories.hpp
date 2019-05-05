@@ -113,6 +113,9 @@ struct iterator_category_to_traversal
     >
 {};
 
+template <class Cat>
+using iterator_category_to_traversal_t = typename iterator_category_to_traversal<Cat>::type;
+
 // Trait to get an iterator's traversal category
 template <class Iterator = mpl::_1>
 struct iterator_traversal

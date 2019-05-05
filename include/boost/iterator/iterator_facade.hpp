@@ -81,11 +81,9 @@ namespace iterators {
     >
     struct enable_if_interoperable_and_random_access_traversal :
         public std::enable_if<
-            mpl::and_<
-                is_interoperable< Facade1, Facade2 >
-              , is_traversal_at_least< typename iterator_category< Facade1 >::type, random_access_traversal_tag >
-              , is_traversal_at_least< typename iterator_category< Facade2 >::type, random_access_traversal_tag >
-            >::value
+                is_interoperable< Facade1, Facade2 >::value
+              && is_traversal_at_least< typename iterator_category< Facade1 >::type, random_access_traversal_tag >::value
+              && is_traversal_at_least< typename iterator_category< Facade2 >::type, random_access_traversal_tag >::value
           , Return
         >
     {};
@@ -109,11 +107,11 @@ namespace iterators {
         typedef std::remove_const_t<ValueParam> value_type;
 
         // Not the real associated pointer type
-        typedef typename mpl::eval_if<
-            boost::iterators::detail::iterator_writability_disabled<ValueParam,Reference>
-          , std::add_pointer<const value_type>
-          , std::add_pointer<value_type>
-        >::type pointer;
+		using pointer = std::conditional_t<
+            boost::iterators::detail::iterator_writability_disabled<ValueParam,Reference>::value
+          , std::add_pointer_t<const value_type>
+          , std::add_pointer_t<value_type>
+        >;
     };
 
     // iterators whose dereference operators reference the same value
@@ -203,12 +201,21 @@ namespace iterators {
 
     template <class Reference, class Value>
     struct is_non_proxy_reference
-      : is_convertible<
+      : std::is_convertible<
             std::remove_reference_t<Reference>
             const volatile*
           , Value const volatile*
         >
     {};
+
+	template <class Reference, class Value>
+	constexpr bool is_non_proxy_reference_fn() {
+		return std::is_convertible<
+				std::remove_reference_t<Reference>
+				const volatile*
+				, Value const volatile*
+				>::value;
+	};
 
     // A metafunction to choose the result type of postfix ++
     //
@@ -225,38 +232,58 @@ namespace iterators {
     // operations, we're not going to try to support them.  Therefore,
     // even if r++ returns a proxy, *r++ will only return a proxy if
     // *r also returns a proxy.
-    template <class Iterator, class Value, class Reference, class CategoryOrTraversal>
-    struct postfix_increment_result
-      : mpl::eval_if<
-            mpl::and_<
-                // A proxy is only needed for readable iterators
-                is_convertible<
-                    Reference
-                    // Use add_lvalue_reference to form `reference to Value` due to
-                    // some (strict) C++03 compilers (e.g. `gcc -std=c++03`) reject
-                    // 'reference-to-reference' in the template which described in CWG
-                    // DR106.
-                    // http://www.open-std.org/Jtc1/sc22/wg21/docs/cwg_defects.html#106
-                  , std::add_lvalue_reference_t<Value const>
-                >
+    //template <class Iterator, class Value, class Reference, class CategoryOrTraversal>
+    //struct postfix_increment_result
+    //  : mpl::eval_if<
+    //        mpl::and_<
+    //            // A proxy is only needed for readable iterators
+    //            is_convertible<
+    //                Reference
+    //                // Use add_lvalue_reference to form `reference to Value` due to
+    //                // some (strict) C++03 compilers (e.g. `gcc -std=c++03`) reject
+    //                // 'reference-to-reference' in the template which described in CWG
+    //                // DR106.
+    //                // http://www.open-std.org/Jtc1/sc22/wg21/docs/cwg_defects.html#106
+    //              , std::add_lvalue_reference_t<Value const>
+    //            >
 
-                // No multipass iterator can have values that disappear
-                // before positions can be re-visited
-              , mpl::not_<
-                    is_convertible<
-                        typename iterator_category_to_traversal<CategoryOrTraversal>::type
-                      , forward_traversal_tag
-                    >
-                >
-            >
-          , mpl::if_<
-                is_non_proxy_reference<Reference,Value>
-              , postfix_increment_proxy<Iterator>
-              , writable_postfix_increment_proxy<Iterator>
-            >
-          , mpl::identity<Iterator>
-        >
-    {};
+    //            // No multipass iterator can have values that disappear
+    //            // before positions can be re-visited
+    //          , mpl::not_<
+    //                std::is_convertible<
+    //                    typename iterator_category_to_traversal<CategoryOrTraversal>::type
+    //                  , forward_traversal_tag
+    //                >
+    //            >
+    //        >
+    //      , mpl::if_<
+    //            is_non_proxy_reference<Reference,Value>
+    //          , postfix_increment_proxy<Iterator>
+    //          , writable_postfix_increment_proxy<Iterator>
+    //        >
+    //      , mpl::identity<Iterator>
+    //    >
+    //{};
+
+	template <class Iterator, class Value, class Reference, class CategoryOrTraversal>
+	struct postfix_increment_result
+		: mpl::eval_if_c <
+			// A proxy is only needed for readable iterators
+			std::is_convertible<Reference, std::add_lvalue_reference_t<Value const>	>::value
+
+			// No multipass iterator can have values that disappear
+			// before positions can be re-visited
+			&& (! std::is_convertible< iterator_category_to_traversal_t<CategoryOrTraversal>, forward_traversal_tag>::value)
+
+			, mpl::if_<
+				is_non_proxy_reference<Reference, Value>
+		          //is_non_proxy_reference_fn<Reference, Value>()
+				, postfix_increment_proxy<Iterator>
+				, writable_postfix_increment_proxy<Iterator>
+			>
+			, mpl::identity<Iterator>
+		>
+	{};
 
     // operator->() needs special support for input iterators to strictly meet the
     // standard's requirements. If *i is not a reference type, we must still
@@ -322,54 +349,73 @@ namespace iterators {
         Iterator m_iter;
     };
 
-    // A metafunction that determines whether operator[] must return a
-    // proxy, or whether it can simply return a copy of the value_type.
-    template <class ValueType, class Reference>
-    struct use_operator_brackets_proxy
-      : mpl::not_<
-            mpl::and_<
-                // Really we want an is_copy_constructible trait here,
-                // but is_POD will have to suffice in the meantime.
-                std::is_pod<ValueType>
-              , iterator_writability_disabled<ValueType,Reference>
-            >
-        >
-    {};
+    //// A metafunction that determines whether operator[] must return a
+    //// proxy, or whether it can simply return a copy of the value_type.
+    //template <class ValueType, class Reference>
+    //struct use_operator_brackets_proxy
+    //  : std::bool_constant<!(
+    //            // Really we want an is_copy_constructible trait here,
+    //            // but is_POD will have to suffice in the meantime.
+    //             std::is_pod<ValueType>::value
+    //          && iterator_writability_disabled<ValueType,Reference>::value)
+
+    //    >
+    //{};
+
+	template <class ValueType, class Reference>
+	constexpr bool  use_operator_brackets_proxy_fn() {
+		return !(
+			// Really we want an is_copy_constructible trait here,
+			// but is_POD will have to suffice in the meantime.
+			std::is_pod<ValueType>::value
+			&& iterator_writability_disabled<ValueType, Reference>::value);
+	}
+
+
+//	// A metafunction that determines whether operator[] must return a
+//// proxy, or whether it can simply return a copy of the value_type.
+//	template <class ValueType, class Reference>
+//	struct use_operator_brackets_proxy
+//		: mpl::not_<
+//		mpl::and_<
+//		// Really we want an is_copy_constructible trait here,
+//		// but is_POD will have to suffice in the meantime.
+//		std::is_pod<ValueType>
+//		, iterator_writability_disabled<ValueType, Reference>
+//		>
+//		>
+//	{};
 
     template <class Iterator, class Value, class Reference>
     struct operator_brackets_result
     {
-        typedef typename mpl::if_<
-            use_operator_brackets_proxy<Value,Reference>
+        using type = std::conditional_t<
+            use_operator_brackets_proxy_fn<Value,Reference>()
           , operator_brackets_proxy<Iterator>
           , Value
-        >::type type;
+        >;
     };
 
-    template <class Iterator>
-    operator_brackets_proxy<Iterator> make_operator_brackets_result(Iterator const& iter, mpl::true_)
-    {
-        return operator_brackets_proxy<Iterator>(iter);
+    template <class Iterator, bool UseProxy>
+	auto make_operator_brackets_result(Iterator const& iter)
+	{
+		if constexpr (UseProxy) {
+			return operator_brackets_proxy<Iterator>(iter);
+		} else {
+			return *iter;
+		}
     }
 
-    template <class Iterator>
-    typename Iterator::value_type make_operator_brackets_result(Iterator const& iter, mpl::false_)
-    {
-      return *iter;
-    }
+    //template <class Iterator>
+    //typename Iterator::value_type make_operator_brackets_result(Iterator const& iter, mpl::false_)
+    //{
+    //}
 
     struct choose_difference_type
     {
         template <class I1, class I2>
-        struct apply
-          :
-          mpl::eval_if<
-              std::is_convertible<I2,I1>
-            , iterator_difference<I1>
-            , iterator_difference<I2>
-          >
-        {};
-
+        using apply =
+            typename iterator_difference < std::conditional_t<std::is_convertible<I2, I1>::value, I1, I2>>;
     };
 
     template <
@@ -650,11 +696,10 @@ namespace iterators {
         typename boost::iterators::detail::operator_brackets_result<Derived, Value, reference>::type
         operator[](difference_type n) const
         {
-            typedef boost::iterators::detail::use_operator_brackets_proxy<Value, Reference> use_proxy;
-
-            return boost::iterators::detail::make_operator_brackets_result<Derived>(
+            //typedef boost::iterators::detail::use_operator_brackets_proxy<Value, Reference> use_proxy;
+			constexpr bool use_proxy = boost::iterators::detail::use_operator_brackets_proxy_fn<Value, Reference>();
+            return boost::iterators::detail::make_operator_brackets_result<Derived,use_proxy>(
                 this->derived() + n
-              , use_proxy()
             );
         }
 

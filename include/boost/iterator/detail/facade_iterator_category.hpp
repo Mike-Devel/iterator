@@ -54,15 +54,11 @@ struct input_output_iterator_tag
 //
 template <class ValueParam, class Reference>
 struct iterator_writability_disabled
-# ifdef BOOST_ITERATOR_REF_CONSTNESS_KILLS_WRITABILITY // Adding Thomas' logic?
   : mpl::or_<
         std::is_const<Reference>
       , boost::detail::indirect_traits::is_reference_to_const<Reference>
       , std::is_const<ValueParam>
     >
-# else
-  : std::is_const<ValueParam>
-# endif
 {};
 
 
