@@ -14,14 +14,7 @@
 
 #include <boost/iterator/detail/facade_iterator_category.hpp>
 
-#include <boost/mpl/eval_if.hpp>
-#include <boost/mpl/if.hpp>
-#include <boost/mpl/or.hpp>
-#include <boost/mpl/and.hpp>
-#include <boost/mpl/not.hpp>
-#include <boost/mpl/always.hpp>
 #include <boost/mpl/apply.hpp>
-#include <boost/mpl/identity.hpp>
 
 #include <cstddef>
 #include <type_traits>
@@ -209,6 +202,12 @@ namespace iterators {
     {};
 
 	template <class Reference, class Value>
+	constexpr bool is_non_proxy_reference_v = std::is_convertible_v<
+											std::remove_reference_t<Reference> const volatile*
+											, Value const volatile*
+										>;
+
+	template <class Reference, class Value>
 	constexpr bool is_non_proxy_reference_fn() {
 		return std::is_convertible<
 				std::remove_reference_t<Reference>
@@ -232,58 +231,39 @@ namespace iterators {
     // operations, we're not going to try to support them.  Therefore,
     // even if r++ returns a proxy, *r++ will only return a proxy if
     // *r also returns a proxy.
-    //template <class Iterator, class Value, class Reference, class CategoryOrTraversal>
-    //struct postfix_increment_result
-    //  : mpl::eval_if<
-    //        mpl::and_<
-    //            // A proxy is only needed for readable iterators
-    //            is_convertible<
-    //                Reference
-    //                // Use add_lvalue_reference to form `reference to Value` due to
-    //                // some (strict) C++03 compilers (e.g. `gcc -std=c++03`) reject
-    //                // 'reference-to-reference' in the template which described in CWG
-    //                // DR106.
-    //                // http://www.open-std.org/Jtc1/sc22/wg21/docs/cwg_defects.html#106
-    //              , std::add_lvalue_reference_t<Value const>
-    //            >
 
-    //            // No multipass iterator can have values that disappear
-    //            // before positions can be re-visited
-    //          , mpl::not_<
-    //                std::is_convertible<
-    //                    typename iterator_category_to_traversal<CategoryOrTraversal>::type
-    //                  , forward_traversal_tag
-    //                >
-    //            >
-    //        >
-    //      , mpl::if_<
-    //            is_non_proxy_reference<Reference,Value>
-    //          , postfix_increment_proxy<Iterator>
-    //          , writable_postfix_increment_proxy<Iterator>
-    //        >
-    //      , mpl::identity<Iterator>
-    //    >
-    //{};
+	template<class T>
+	struct TypeWrapper {
+		using type = T;
+	};
 
 	template <class Iterator, class Value, class Reference, class CategoryOrTraversal>
-	struct postfix_increment_result
-		: mpl::eval_if_c <
+	constexpr auto postfix_increment_result_impl() {
+		if constexpr (
 			// A proxy is only needed for readable iterators
-			std::is_convertible<Reference, std::add_lvalue_reference_t<Value const>	>::value
+			std::is_convertible_v<Reference, std::add_lvalue_reference_t<Value const>>
 
 			// No multipass iterator can have values that disappear
 			// before positions can be re-visited
-			&& (! std::is_convertible< iterator_category_to_traversal_t<CategoryOrTraversal>, forward_traversal_tag>::value)
+			&& (!std::is_convertible_v< iterator_category_to_traversal_t<CategoryOrTraversal>, forward_traversal_tag>)
+			)
+		{
+			if constexpr (is_non_proxy_reference_v<Reference, Value>) {
+				return TypeWrapper<postfix_increment_proxy<Iterator>>{};
+			}
+			else {
+				return TypeWrapper<writable_postfix_increment_proxy<Iterator>>{};
+			}
+		}
+		else {
+			return TypeWrapper<Iterator>{};
+		}
+	}
 
-			, mpl::if_<
-				is_non_proxy_reference<Reference, Value>
-		          //is_non_proxy_reference_fn<Reference, Value>()
-				, postfix_increment_proxy<Iterator>
-				, writable_postfix_increment_proxy<Iterator>
-			>
-			, mpl::identity<Iterator>
-		>
-	{};
+	template <class Iterator, class Value, class Reference, class CategoryOrTraversal>
+	using postfix_increment_result_t = typename decltype(postfix_increment_result_impl<Iterator, Value, Reference, CategoryOrTraversal>())::type;
+
+
 
     // operator->() needs special support for input iterators to strictly meet the
     // standard's requirements. If *i is not a reference type, we must still
@@ -371,21 +351,6 @@ namespace iterators {
 			&& iterator_writability_disabled<ValueType, Reference>::value);
 	}
 
-
-//	// A metafunction that determines whether operator[] must return a
-//// proxy, or whether it can simply return a copy of the value_type.
-//	template <class ValueType, class Reference>
-//	struct use_operator_brackets_proxy
-//		: mpl::not_<
-//		mpl::and_<
-//		// Really we want an is_copy_constructible trait here,
-//		// but is_POD will have to suffice in the meantime.
-//		std::is_pod<ValueType>
-//		, iterator_writability_disabled<ValueType, Reference>
-//		>
-//		>
-//	{};
-
     template <class Iterator, class Value, class Reference>
     struct operator_brackets_result
     {
@@ -406,16 +371,11 @@ namespace iterators {
 		}
     }
 
-    //template <class Iterator>
-    //typename Iterator::value_type make_operator_brackets_result(Iterator const& iter, mpl::false_)
-    //{
-    //}
-
     struct choose_difference_type
     {
         template <class I1, class I2>
         using apply =
-            typename iterator_difference < std::conditional_t<std::is_convertible<I2, I1>::value, I1, I2>>;
+            iterator_difference < std::conditional_t<std::is_convertible<I2, I1>::value, I1, I2>>;
     };
 
     template <
@@ -752,13 +712,14 @@ namespace iterators {
   };
 
   template <class I, class V, class TC, class R, class D>
-  inline typename boost::iterators::detail::postfix_increment_result<I,V,R,TC>::type
+  //inline typename boost::iterators::detail::postfix_increment_result<I,V,R,TC>::type
+ inline boost::iterators::detail::postfix_increment_result_t<I, V, R, TC>
   operator++(
       iterator_facade<I,V,TC,R,D>& i
     , int
   )
   {
-      typename boost::iterators::detail::postfix_increment_result<I,V,R,TC>::type
+      boost::iterators::detail::postfix_increment_result_t<I,V,R,TC>
           tmp(*static_cast<I*>(&i));
 
       ++i;

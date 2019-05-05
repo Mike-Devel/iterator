@@ -54,10 +54,10 @@ struct input_output_iterator_tag
 //
 template <class ValueParam, class Reference>
 struct iterator_writability_disabled
-  : mpl::or_<
-        std::is_const<Reference>
-      , boost::detail::indirect_traits::is_reference_to_const<Reference>
-      , std::is_const<ValueParam>
+  : mpl::bool_<
+        std::is_const_v<Reference>
+      || boost::detail::indirect_traits::is_reference_to_const<Reference>::value
+      || std::is_const_v<ValueParam>
     >
 {};
 
